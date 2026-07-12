@@ -10,20 +10,21 @@ struct ContentView: View {
         } detail: {
             if let id = store.selectedNoteID,
                let index = store.notes.firstIndex(where: { $0.id == id }) {
-                CanvasView(note: $store.notes[index], save: { store.update($0) })
+                NoteEditorView(note: $store.notes[index], save: { store.update($0) })
                     .id(id)
             } else {
                 VStack(spacing: 12) {
                     Image(systemName: "note.text")
-                        .font(.system(size: 48))
+                        .font(.system(size: 52))
                         .foregroundStyle(.tertiary)
-                    Text("Select a note or create a new one")
+                    Text("No note selected")
                         .foregroundStyle(.secondary)
-                    Button("New Note") { store.createNote() }
+                    Button("Create a note") { store.createNote() }
+                        .buttonStyle(.borderedProminent)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .frame(minWidth: 800, minHeight: 550)
+        .frame(minWidth: 700, minHeight: 500)
     }
 }

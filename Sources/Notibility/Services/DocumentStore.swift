@@ -6,13 +6,13 @@ class DocumentStore {
     var notes: [Note] = []
     var selectedNoteID: UUID?
 
-    private let directory: URL
+    private let saveFolder: URL
 
     init() {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        directory = docs.appendingPathComponent("Notibility", isDirectory: true)
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        load()
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        saveFolder = documents.appendingPathComponent("Notibility")
+        try? FileManager.default.createDirectory(at: saveFolder, withIntermediateDirectories: true)
+        loadAll()
     }
 
     func createNote() {
@@ -24,7 +24,7 @@ class DocumentStore {
 
     func delete(_ note: Note) {
         notes.removeAll { $0.id == note.id }
-        try? FileManager.default.removeItem(at: fileURL(for: note.id))
+        try? FileManager.default.removeItem(at: fileURL(note.id))
         selectedNoteID = notes.first?.id
     }
 
@@ -36,23 +36,20 @@ class DocumentStore {
         save(updated)
     }
 
-    private func load() {
-        guard let files = try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) else { return }
-        let decoder = JSONDecoder()
+    private func loadAll() {
+        guard let files = try? FileManager.default.contentsOfDirectory(at: saveFolder, includingPropertiesForKeys: nil) else { return }
         notes = files
             .filter { $0.pathExtension == "json" }
-            .compactMap { try? decoder.decode(Note.self, from: Data(contentsOf: $0)) }
+            .compactMap { try? JSONDecoder().decode(Note.self, from: Data(contentsOf: $0)) }
             .sorted { $0.updatedAt > $1.updatedAt }
         selectedNoteID = notes.first?.id
     }
 
     private func save(_ note: Note) {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        try? encoder.encode(note).write(to: fileURL(for: note.id))
+        try? JSONEncoder().encode(note).write(to: fileURL(note.id))
     }
 
-    private func fileURL(for id: UUID) -> URL {
-        directory.appendingPathComponent("\(id).json")
+    private func fileURL(_ id: UUID) -> URL {
+        saveFolder.appendingPathComponent("\(id).json")
     }
 }
