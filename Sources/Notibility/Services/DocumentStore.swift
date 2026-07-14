@@ -2,20 +2,20 @@ import Foundation
 
 @Observable
 @MainActor
-class DocumentStore {
+public class DocumentStore {
     var notes: [Note] = []
     var selectedNoteID: UUID?
 
     private let saveFolder: URL
 
-    init() {
+    public init() {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         saveFolder = documents.appendingPathComponent("Notibility")
         try? FileManager.default.createDirectory(at: saveFolder, withIntermediateDirectories: true)
         loadAll()
     }
 
-    func createNote() {
+    public func createNote() {
         let note = Note()
         notes.insert(note, at: 0)
         selectedNoteID = note.id
@@ -25,7 +25,7 @@ class DocumentStore {
     func delete(_ note: Note) {
         notes.removeAll { $0.id == note.id }
         try? FileManager.default.removeItem(at: fileURL(note.id))
-        selectedNoteID = notes.first?.id
+        selectedNoteID = nil
     }
 
     func update(_ note: Note) {
@@ -42,7 +42,6 @@ class DocumentStore {
             .filter { $0.pathExtension == "json" }
             .compactMap { try? JSONDecoder().decode(Note.self, from: Data(contentsOf: $0)) }
             .sorted { $0.updatedAt > $1.updatedAt }
-        selectedNoteID = notes.first?.id
     }
 
     private func save(_ note: Note) {

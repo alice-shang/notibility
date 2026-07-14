@@ -3,11 +3,20 @@ import PackageDescription
 
 let package = Package(
     name: "Notibility",
-    platforms: [.macOS(.v14)],
+    platforms: [.macOS(.v14), .iOS(.v17)],
+    products: [
+        .library(name: "Notibility", targets: ["Notibility"]),
+        .executable(name: "NotibilityMac", targets: ["NotibilityMac"])
+    ],
     targets: [
-        .executableTarget(
+        .target(
             name: "Notibility",
             path: "Sources/Notibility"
+        ),
+        .executableTarget(
+            name: "NotibilityMac",
+            dependencies: ["Notibility"],
+            path: "Sources/NotibilityMac"
         )
     ]
 )
